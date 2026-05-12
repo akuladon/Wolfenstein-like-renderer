@@ -5,6 +5,7 @@
 #define FOV 90.0f
 #define THREAD_COUNT 1
 
+
 Renderer::Renderer(int w, int h, CharMap* mapC, std::vector<Entity*> * enList)
 	: screenWidth(w < 1 ? 1 : w),
 	screenHeight(h < 1 ? 1 : h),
@@ -14,6 +15,8 @@ Renderer::Renderer(int w, int h, CharMap* mapC, std::vector<Entity*> * enList)
 {
 	renderBuffer.resize(screenWidth * screenHeight);
 	renderBuffer.assign(screenWidth * screenHeight, ' ');
+	colorBuffer.resize(screenWidth * screenHeight);
+	colorBuffer.assign(screenWidth * screenHeight, 0);
 	zBuffer.resize(screenWidth);
 	zBuffer.assign(screenWidth * screenHeight, 100);
 }
@@ -21,6 +24,7 @@ Renderer::Renderer(int w, int h, CharMap* mapC, std::vector<Entity*> * enList)
 void Renderer::Render() {
 	//Clear buffers
 	renderBuffer.assign(screenWidth * screenHeight, ' ');
+	colorBuffer.assign(screenWidth * screenHeight, 0);
 
 	//Tracing the z distance of walls from map
 	for (int i = 0; i < screenWidth; i++) {
@@ -68,26 +72,26 @@ void Renderer::Render() {
 					continue;
 				}
 				if (zBuffer.at(i) > d) {
+					std::vector<char>* text = e->getFill();
+					WORD color = e->getColor();
+
+
+					int progress = (i - screenX + spriteWidth) * (text->size() - 1) / (2 * spriteWidth);
 					char ch;
-					if (e->getFill() == 'j') {
-						std::vector<char> text = { 'j', 'o', 'b', ' ', 'a', 'p', 'p', 'l', 'i', 'c', 'a', 't', 'i', 'o', 'n',};
-
-						int progress = (i - screenX + spriteWidth) * (text.size()-1) / (2 * spriteWidth);
-
-						if (progress > filler) {
-							filler = progress;
-							ch = text.at(progress >= 0 && progress < text.size() ? progress % text.size() : 0);
-						}
-						else
-						{
-							ch = ' ';
-						}
+					if (progress > filler) {
+						filler = progress;
+						ch = text->at(progress >= 0 && progress < text->size() ? progress % text->size() : 0);
+					}
+					else
+					{
+						ch = ' ';
+					}
 						
-					}
-					else {
-						ch = e->getFill();
-					}
-					FillColumn(i, screenHeight / 2 - 20 / d, screenHeight / 2 + screenHeight / 3 / d, ':');
+
+
+					FillColumn(i, screenHeight / 2 - 20 / d, screenHeight / 2 + screenHeight / 3 / d, ':', color);
+
+
 					int labelHeight = static_cast<int>(screenHeight / 2 - 4 / d) * screenWidth + i;
 					if (labelHeight < 0 || labelHeight >= renderBuffer.size()) {
 						continue;
@@ -99,18 +103,6 @@ void Renderer::Render() {
 	}
 }
 
-//Outputting renderBuffer to console
-void Renderer::Draw() {
-	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	DWORD dwBytesWritten = 0;
-	WriteConsoleOutputCharacterA(
-		hConsole,
-		renderBuffer.data(),
-		screenWidth*screenHeight,
-		{0,0},
-		&dwBytesWritten);
-
-}
 
 //Tracing the distance to the wall in the given direction
 float Renderer::TraceMap(float startX, float startY, float rot) {
@@ -153,18 +145,19 @@ void Renderer::FillColumns(int start, int end) {
 		else if (zBuffer.at(i) < DRAW_DISTANCE-1) { shade = '.'; }
 		else { shade = ' '; }
 
-		FillColumn(i, ceiling, floor, shade);
+		FillColumn(i, ceiling, floor, shade, FOREGROUND_GREEN);
 	}
 }
 
 //Fill one column of the renderBuffer
-void Renderer::FillColumn(int x, int ceiling, int floor, char ch) {
+void Renderer::FillColumn(int x, int ceiling, int floor, char ch, WORD col) {
 	if (x < 0 || x >= screenWidth ) {
 		return;
 	}
 		for (int j = 0; j < screenHeight; j++) {
 			if (j > ceiling && j < floor) {
 				renderBuffer.at(j * screenWidth + x) = ch;
+				colorBuffer.at(j * screenWidth + x) = col;
 			}
 		}
 }
@@ -182,4 +175,24 @@ void Renderer::ResizeWindow() {
 	rect.Right = screenWidth - 1;
 	rect.Bottom = screenHeight - 1 + 10;
 	SetConsoleWindowInfo(hConsole, TRUE, &rect);
+}
+
+//Outputting renderBuffer to console
+void Renderer::Draw() {
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	DWORD dwBytesWritten = 0;
+	WriteConsoleOutputCharacterA(
+		hConsole,
+		renderBuffer.data(),
+		screenWidth * screenHeight,
+		{ 0,0 },
+		&dwBytesWritten);
+
+	WriteConsoleOutputAttribute(
+		hConsole,
+		colorBuffer.data(),
+		screenWidth * screenHeight,
+		{ 0,0 },
+		&dwBytesWritten);
+
 }

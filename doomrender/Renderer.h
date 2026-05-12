@@ -23,7 +23,7 @@ class Renderer
 	std::vector<Entity*>* entityList;
 	float TraceMap(float x, float y, float rot);
 	void FillColumns(int start, int end);
-	void FillColumn(int x, int ceiling, int floor, char ch);
+	void FillColumn(int x, int ceiling, int floor, char ch, WORD col);
 public:
 	float xLoc = 0;
 	float yLoc = 0;
@@ -32,6 +32,7 @@ public:
 
 	std::vector<char> renderBuffer;
 	std::vector<float> zBuffer;
+	std::vector<WORD> colorBuffer;
 	void Render();
 	void Draw();
 	void ResizeWindow();

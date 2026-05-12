@@ -1,6 +1,6 @@
 #include "Enemy.h"
 
-Enemy::Enemy(float xc, float yc, char inc, float dc) : Entity(xc, yc, inc) {
+Enemy::Enemy(float xc, float yc, char inc, float dc) : Entity(xc, yc, { 'E', 'n', 'e', 'm', 'y' }, FOREGROUND_RED) {
 	d = dc;
 	xs = xc;
 	ys = yc;

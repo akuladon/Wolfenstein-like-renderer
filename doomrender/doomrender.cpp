@@ -74,6 +74,9 @@ int main()
     EntityList.push_back(&e2);
     EntityList.push_back(&e3);
 
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD pos = { 0, 50 };
+
     //Waiting for input
     std::cout << "Resize the window to full screen and press enter\nIf you have troubles with visualization, try pressing R\n";
     std::getchar();
@@ -130,8 +133,6 @@ int main()
 
         //Debug data rendering
         if (deltaTime != 0) {
-            HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-            COORD pos = { 0, 50 };
             SetConsoleCursorPosition(hOut, pos);
            std::cout << "FPS: " << 1 / deltaTime << " X: " << rend.xLoc << " Y: " << rend.yLoc;
         }

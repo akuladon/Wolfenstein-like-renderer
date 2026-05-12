@@ -1,6 +1,6 @@
 #include "Follower.h"
 
-Follower::Follower(float xc, float yc, Renderer* player) : Entity(xc, yc, 'j') {
+Follower::Follower(float xc, float yc, Renderer* player) : Entity(xc, yc, { 'J', 'o', 'b', ' ', 'A', 'p', 'p', 'l', 'i', 'c', 'a', 't', 'i', 'o', 'n' }, FOREGROUND_BLUE) {
 	_player = player;
 }
 
